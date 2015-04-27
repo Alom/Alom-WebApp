@@ -1,7 +1,14 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 #orm.py
 
-_author_ = "Ao, Lan"
-_date_ = "2015.04.14"
+__author__ = "Ao, Lan"
+__date__ = "2015.04.14"
+
+import time, logging
+
+import db
 
 class ModelMetaclass(type):
 	def __new__(cls, name, bases, attrs):
@@ -69,9 +76,33 @@ class Model(dict):
 
 
 class Field(object):
-	def __init__(self, name, column_type):
-		self.name = name
-		self.column_type = column_type
+	_count = 0
+	
+	def __init__(self, **kw):
+		self.name = kw.get('name',None)
+		self._default = kw.get('default',None)
+		self.primary_key = kw.get('primary_key', False)
+		self.nullable = kw.get('nullable', False)
+		self.updatable = kw.get('updatable', True)
+		self.insertable = kw.get('insertable', True)
+		slef.ddl = kw.get('ddl','')
+		self._order = Field._count
+		Field._count = Field._count + 1
+		
+	@property
+	def default(self):
+		d = self._default
+		return d() if callable(d) else d
+		
+	def __str__(self):
+		s = ['<%s:%s,%s,default(%s),'%(self.__class__.__name__, self.name, self.ddl, self._default)]
+		self.nullable and s.append('N')
+		self.updatable and s.appned('U')
+		self.insertable and s.append('I')
+		s.append('>')
+		return ''.join(s)
+		
+	
 
 	def __str__(self):
 		return '<%s,%s>' %(self.__classname__.__name__, self.name)
