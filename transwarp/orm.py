@@ -108,12 +108,59 @@ class Field(object):
 		return '<%s,%s>' %(self.__classname__.__name__, self.name)
 
 class IntegerField(Field):
-	def __init__(self, name):
-		super().__init__(name, 'varchar(100)')
+	def __init__(self, **kw):
+		if not 'default' in kw:
+			kw['default'] = 0
+		if not 'ddl' in kw:
+			kw['ddl'] = 'bigint'
+		super(IntegerField, self).__init__(**kw)
 
 class StringField(Field):
+	def __init__(self, **kw):
+		if not 'default' in kw:
+			kw['default'] = ''
+		if not 'ddl' in kw:
+			kw['ddl'] = 'varchar(255)'
+		super(StringField, self).__init__(**kw)
+		
+class FloatField(Field):
+	def __init__(self, **kw):
+		if not 'default' in kw:
+			kw['default'] = 0.0
+		if not 'ddl' in kw:
+			kw['ddl'] = 'real'
+		super(FloatField, self).__init__(**kw)
+
+class BooleanField(Field):
+	def __init__(self, **kw):
+		if not 'default' in kw:
+			kw['default'] = False
+		if not 'ddl' in kw:
+			kw['ddl'] = 'bool'
+		super(BooleanField, self).__init__(**kw)
+
+class TextField(Field):
+	def __init__(self, **kw):
+		if not 'default' in kw:
+			kw['default'] = ''
+		if not 'ddl' in kw:
+			kw['ddl'] = 'text'
+		super(TextField, self).__init__(**kw)
+
+class BlobField(Field):
+	def __init__(self, **kw):
+		if not 'default' in kw:
+			kw['default'] = ''
+		if not 'ddl' in kw:
+			kw['ddl'] = 'blob'
+		super(BlobField, self).__init__(**kw)
+
+class VersionField(Field):
 	def __init__(self, name):
-		super().__init__(name, 'bigint')
+		super(VersionField, self).__init__(name=name, default=0, ddl='bigint')
+
+
+			
 
 
 
