@@ -14,14 +14,49 @@ class ModelMetaclass(type):
 	def __new__(cls, name, bases, attrs):
 		if name == "Model":
 			return type.__new__(cls, name, bases, attrs)
+		
+		#why i need to store subclasses????
+		if not hasattr(cls, 'subclasses'):
+			cls.subclasses = {}
+
+		if not name in cls.subclasses:
+			cls.subclasses[name] = name
+		else:
+			logging.info('Redefine class: %s' %(name))
+		
+		
+		#process mappings for fields
 		mappings = dict()
+		primary_key = None
 		for k, v in attrs.iteritems():
 			if isinstance(v, Field):
+				if not v.name:
+					v.name = name
+				
+				#handle the primary key cases
+				if v.primary_key:
+					if primary_key:
+						raise TypeError("There is more than 1 primary key in class: %s" %(name))
+					if v.nullable:
+						logging.warning("The primary key should not be null.")
+						v.nullable = False
+					if v.updatable:
+						logging.warning("The primary key should not be updatable.")
+						v.updatabale = False
+					primary_key = v
 				mappings[k] = v
-		for k in mappings.iterkeys():
+		if not primary_key:
+			raise TypeError("There is no primary key in class: %s" %(name))
+		
+		for k in mappings:
 			attrs.pop(k)
-		attrs["__table__"] = name
+
+		attrs["__primary_key__"] = primary_key
+		if not '__table__' in attrs:
+			attrs['__table__'] = name.lower()
 		attrs["__mappings__"] = mappings
+		attrs['__sql__'] = lambda self: _gen_sql(attrs['__table__'], mappings)
+		
 		return type.__new__(cls, name, bases, attrs)
 
 class Model(dict):
